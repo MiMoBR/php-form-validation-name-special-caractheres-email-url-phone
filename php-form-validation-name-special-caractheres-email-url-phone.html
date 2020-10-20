@@ -1,0 +1,99 @@
+<?php
+$nameErr = $emailErr = $telephoneErr = $pointHasErr = "";
+$name = $email = $telephone = $pointHas  = "";
+
+$name      = trim($_POST['name']);
+$email     = trim($_POST['email']);
+$telephone = trim($_POST['telephone']);
+$pointHas  = trim($_POST['pointHas']);
+
+if(htmlspecialchars($_SERVER["REQUEST_METHOD"] == "POST")) {
+  $regex_nome = '/^[a-zA-Zá-üÁ-Ü]+(( [a-zA-Zá-üÁ-Ü]+)+)?$/';
+  $pointArray = array("Yes", "No");
+  if(empty($name)) {
+    $nameErr = "Name is required";
+    return false;
+  } else if( preg_match($regex_nome, $name)){
+    $name = $name;
+  } else{
+    return false;
+  }
+  if(empty($email)) {
+    $emailErr = "Email is required";
+    return false;
+  } else if(filter_var($email, FILTER_VALIDATE_EMAIL)){
+    $email = $email;
+  } else{
+    return false;
+  }
+  if(empty($telephone)) {
+    $telephoneErr = "Telephone is required";
+    return false;
+  } else if( preg_match('/^\([0-9]{2}\)\s[0-9]{4}\-[0-9]{4}+$/', $telephone)){
+    $telephone = $telephone;
+    // ( -> \(
+    // space -> \s
+    // 0-9 -> [0-9]
+    // length -> {x}
+  }else{
+    return false;
+  }
+  if(empty($pointHas)) {
+    $pointHasErr = "Point Has is required";
+    return false;
+  } else if( in_array($pointHas,$pointArray)){ 
+    $pointHas = $pointHas;
+  }else{
+    return false;
+  }
+  // $website = test_input($_POST["website"]);
+  //   if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i",$website)) {
+  //   $websiteErr = "Invalid URL";
+  // }
+}
+
+  $to         = "reinaldo@mimobr.com";
+  $sender     = "reinaldo@mimobr.com"; // Deve ser um email válido do domínio
+  $replyto    = "cadastro@mimobr.comercial.ws";
+
+  $boundary   = "XYZ-" . date("dmYis") . "-ZYX";
+  $headers    = "MIME-Version: 1.0\n";
+  $headers   .= "From: $sender\n";
+  $headers   .= "Reply-To: $replyto\n";
+  $headers   .= "Content-type: multipart/mixed; boundary=\"$boundary\"\r\n";  
+  $headers   .= "$boundary\n"; 
+
+  $corpo_mensagem = " 
+      <br>Formulário Simples do site
+      <br>--------------------------------------------<br>
+      <br><strong>Nome:</strong> $name
+      <br><strong>Email:</strong> $email
+      <br><strong>Telefone:</strong> $telephone
+      <br><strong>Radio:</strong> $pointHas
+      <br><br>--------------------------------------------
+  ";
+
+  $mensagem = "--$boundary\n"; // Nas linhas abaixo possuem os parâmetros de formatação e codificação, juntamente com a inclusão do arquivo anexado no corpo da mensagem
+  $mensagem.= "Content-Transfer-Encoding: 8bits\n"; 
+  $mensagem.= "Content-Type: text/html; charset=\"utf-8\"\n\n";
+  $mensagem.= $corpo_mensagem."\n"; 
+
+  $assunto = "This place to paste the subject of email!";
+
+  $mensagem.= "--$boundary--\r\n"; 
+
+  /* Função que envia a mensagem  */
+  if(mail($to, $assunto, $mensagem, $headers, "-r". $sender)){
+    // echo "<h2>Your Input:</h2>";
+    // echo  $name;
+    // echo "<br>";
+    // echo  $email;
+    // echo "<br>";
+    // echo  $pointHas;
+    // echo "<br>";
+    // echo  $telephone;
+    header("Location: https://www.mimobr.com/form-simple/send-email-ok.html");
+  }else{
+    echo "<br><br><center><b><font color='red'>Ocorreu um erro ao enviar a mensagem!";
+  }
+?>
